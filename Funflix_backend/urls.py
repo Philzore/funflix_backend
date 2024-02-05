@@ -16,7 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from funflix.views import LoginView, RegisterView, ActivateAccount
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('login/', LoginView.as_view()),
+    path('register/', RegisterView.as_view()),
+    path('activate/<uidb64>/<token>/', ActivateAccount.as_view(), name='activate_account')
 ]
