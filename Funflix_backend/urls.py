@@ -15,6 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf import  settings
+from django.conf.urls.static import static
 from django.urls import path
 from funflix.views import LoginView, RegisterView, ActivateAccount
 
@@ -23,4 +25,4 @@ urlpatterns = [
     path('login/', LoginView.as_view()),
     path('register/', RegisterView.as_view()),
     path('activate/<str:uidb64>/<str:token>/', ActivateAccount.as_view(), name='activate_account')
-]
+] + static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)
