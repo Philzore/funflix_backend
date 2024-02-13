@@ -17,12 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import  settings
 from django.conf.urls.static import static
-from django.urls import path
-from funflix.views import LoginView, RegisterView, ActivateAccount
+from django.urls import path, include
+from funflix.views import LoginView, RegisterView, ActivateAccount, MainView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view()),
     path('register/', RegisterView.as_view()),
-    path('activate/<str:uidb64>/<str:token>/', ActivateAccount.as_view(), name='activate_account')
+    path('activate/<str:uidb64>/<str:token>/', ActivateAccount.as_view(), name='activate_account'),
+    path('start-screen/', MainView.as_view()),
+    path("__debug__/", include("debug_toolbar.urls")),
+    path('django-rq/', include('django_rq.urls')),
 ] + static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)

@@ -31,6 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CACHE_TTL = 60 * 15 #total lifetime 15min
 
 # Application definition
 
@@ -45,10 +46,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'debug_toolbar',
+    'django_rq',
+    'import_export',
 ]
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -56,6 +62,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+]
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -80,6 +93,9 @@ TEMPLATES = [
     },
 ]
 
+IMPORT_EXPORT_USE_TRANSACTIONS = True
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/staticfiles')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
@@ -145,6 +161,29 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
+
+CACHES = {"default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379/1", 
+            "OPTIONS": { 
+                "PASSWORD" : 'foobared',
+                "CLIENT_CLASS": "django_redis.client.DefaultClient"
+            }, 
+            "KEY_PREFIX": "funflix"}
+}
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'PASSWORD': 'foobared',
+        'DEFAULT_TIMEOUT': 360,
+       
+    }
+}
+
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST')

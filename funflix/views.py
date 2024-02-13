@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.authtoken.views import APIView, ObtainAuthToken
@@ -9,11 +8,13 @@ from django.contrib.auth.models import User
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
-from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
-
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT) #total life time
 
 # Create your views here.
 class LoginView(ObtainAuthToken, APIView):
@@ -79,3 +80,10 @@ class ActivateAccount(APIView):
                 return JsonResponse({'success': False, 'message': 'Invalid token. Try again!'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
+        
+
+@method_decorator(cache_page(CACHE_TTL), name='dispatch')
+class MainView(APIView):
+    
+    def get(self, request):
+        return JsonResponse({'success': False})
