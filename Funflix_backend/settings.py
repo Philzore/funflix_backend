@@ -31,7 +31,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['194.164.206.243',
 		'localhost',
-		'127.0.0.1']
+		'127.0.0.1',
+		'funflix.philippmoessl.de']
 
 CACHE_TTL = 60 * 15 #total lifetime 15min
 
