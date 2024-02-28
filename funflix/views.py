@@ -4,7 +4,7 @@ from rest_framework.authtoken.views import APIView, ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.http import JsonResponse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
@@ -13,23 +13,43 @@ from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from .managers import CustomUserManager
+from rest_framework.permissions import AllowAny
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT) #total life time
+User = get_user_model()
 
 # Create your views here.
 class LoginView(ObtainAuthToken, APIView):
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
+        try:
+            serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user_id': user.pk,
-            'email': user.email,
-            'username' : user.username
-        })
+            serializer.is_valid(raise_exception=True)
+            user = serializer.validated_data['user']
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'token': token.key,
+                'user_id': user.pk,
+                'email': user.email,
+                'username' : user.username
+            })
+        except Exception as e:
+            err_msg = str(e)
+            return JsonResponse({'success': False, 'error': err_msg})
+        
+class GuestView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request, *args, **kwargs):
+        try:
+            guest_user = User.objects.create_guest_user()
+            guest_user.is_active = True
+            guest_user.save()
+            print(guest_user)
+            return JsonResponse({'success': True, 'message': 'Guest user created successfully'})
+        except Exception as e:
+            err_msg = str(e)
+            return JsonResponse({'success': False, 'error': err_msg})
 
 class RegisterView(APIView):
 
