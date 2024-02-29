@@ -13,8 +13,9 @@ from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
-from .managers import CustomUserManager
 from rest_framework.permissions import AllowAny
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT) #total life time
 User = get_user_model()
@@ -45,8 +46,13 @@ class GuestView(APIView):
             guest_user = User.objects.create_guest_user()
             guest_user.is_active = True
             guest_user.save()
-            print(guest_user)
-            return JsonResponse({'success': True, 'message': 'Guest user created successfully'})
+            token, created = Token.objects.get_or_create(user=guest_user)
+            return Response({
+                'token': token.key,
+                'user_id': guest_user.pk,
+                'email': guest_user.email,
+                'username' : guest_user.username
+            })
         except Exception as e:
             err_msg = str(e)
             return JsonResponse({'success': False, 'error': err_msg})
@@ -104,6 +110,16 @@ class ActivateAccount(APIView):
 
 @method_decorator(cache_page(CACHE_TTL), name='dispatch')
 class MainView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
         return JsonResponse({'success': False})
+    
+    
+class UploadVideoView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        author = request.user
