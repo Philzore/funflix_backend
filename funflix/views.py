@@ -16,6 +16,7 @@ from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from .models import Video
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT) #total life time
 User = get_user_model()
@@ -122,4 +123,13 @@ class UploadVideoView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        author = request.user
+        try:
+            author = request.user
+            video_title = request.data.get('title')
+            video_description = request.data.get('description')
+            video_file = request.data.get('path')
+            new_video_model = Video.objects.create(author=author, title= video_title, description= video_description,video_file= video_file)
+            new_video_model.save()
+            return JsonResponse({'success': False, 'message': 'Good job'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
