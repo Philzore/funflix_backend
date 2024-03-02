@@ -17,6 +17,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .models import Video
+from .serializer import *
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT) #total life time
 User = get_user_model()
@@ -109,13 +110,15 @@ class ActivateAccount(APIView):
             return JsonResponse({'success': False, 'message': str(e)})
         
 
-@method_decorator(cache_page(CACHE_TTL), name='dispatch')
+# @method_decorator(cache_page(CACHE_TTL), name='dispatch')
 class MainView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        return JsonResponse({'success': False})
+        usernames = User.objects.all()
+        serializer = UserSerializer(usernames, many= True)
+        return Response(serializer.data)
     
     
 class UploadVideoView(APIView):
@@ -127,9 +130,14 @@ class UploadVideoView(APIView):
             author = request.user
             video_title = request.data.get('title')
             video_description = request.data.get('description')
-            video_file = request.data.get('path')
+            video_file = request.data.get('file')
+            print(video_file)
+            #check if video object wioth same title exist
+            if Video.objects.filter(title=video_title).exists():
+                return JsonResponse({'success': False, 'message': 'Title already exist'})
+            #create new video object
             new_video_model = Video.objects.create(author=author, title= video_title, description= video_description,video_file= video_file)
             new_video_model.save()
-            return JsonResponse({'success': False, 'message': 'Good job'})
+            return JsonResponse({'success': True, 'message': 'Good job'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})

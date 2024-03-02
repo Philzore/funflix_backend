@@ -16,7 +16,7 @@ def video_post_save(sender, instance, created, **kwargs):
        
         queue.enqueue(create_thumbnail, instance.video_file.path)
     else:
-        print (f'Kein neues Video, video Filee : {instance.video_file}')
+        print (f'Kein neues Video, video File : {instance.video_file}')
         
 
 @receiver(post_delete, sender=Video)
