@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.authtoken.views import APIView, ObtainAuthToken
@@ -111,7 +112,7 @@ class ActivateAccount(APIView):
         
 
 # @method_decorator(cache_page(CACHE_TTL), name='dispatch')
-class MainView(APIView):
+class UserView(APIView):
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
     
@@ -119,6 +120,22 @@ class MainView(APIView):
         usernames = User.objects.all()
         serializer = UserSerializer(usernames, many= True)
         return Response(serializer.data)
+    
+class ThumbnailView(APIView):
+    
+    def get(self, request):
+        thumbnail_dir = os.path.join(settings.MEDIA_ROOT, 'videos')
+        thumbnails = []
+        for filename in os.listdir(thumbnail_dir):
+            if filename.endswith('.jpg'):
+                thumbnail_url = os.path.join(settings.MEDIA_URL,'videos', filename)
+                thumbnail_url = thumbnail_url.replace('\\', '/')
+                thumbnails.append(thumbnail_url)
+                
+        serializer = VideoThumbnailSerializer(thumbnails, many=True)
+        # serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
+        
     
     
 class UploadVideoView(APIView):

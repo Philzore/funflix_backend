@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.conf import  settings
 from django.conf.urls.static import static
 from django.urls import path, include
-from funflix.views import LoginView, RegisterView, ActivateAccount, MainView, GuestView, UploadVideoView
+from funflix.views import LoginView, RegisterView, ActivateAccount, UserView,ThumbnailView, GuestView, UploadVideoView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
@@ -27,7 +27,8 @@ urlpatterns = [
     path('guest/', GuestView.as_view()),
     path('register/', RegisterView.as_view()),
     path('activate/<str:uidb64>/<str:token>/', ActivateAccount.as_view(), name='activate_account'),
-    path('start-screen/', MainView.as_view()),
+    path('start-screen/get_user/', UserView.as_view()),
+    path('start-screen/get_thumbnails/', ThumbnailView.as_view()),
     path('start-screen/add_video/', UploadVideoView.as_view(), name='upload_video'),
     path("__debug__/", include("debug_toolbar.urls")),
     path('django-rq/', include('django_rq.urls')),
